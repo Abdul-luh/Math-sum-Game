@@ -12,7 +12,17 @@ export default function HomeLayout() {
 					fontWeight: "bold",
 				},
 			}}>
-			<Stack.Screen name="index" />
+			<Stack.Screen
+				name="index"
+				options={{
+					title: "Math Game",
+					headerTitleAlign: "center",
+					headerTitleStyle: {
+						fontSize: 24,
+						fontWeight: "bold",
+					},
+				}}
+			/>
 			{/* <Stack.Screen name="details" /> */}
 		</Stack>
 	);
