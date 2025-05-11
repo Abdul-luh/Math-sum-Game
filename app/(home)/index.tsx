@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
 	Button,
 	KeyboardAvoidingView,
@@ -7,11 +7,13 @@ import {
 	Text,
 	TextInput,
 } from "react-native";
+import { Picker } from "@react-native-picker/picker";
 
 export default function App() {
+	const inputRef = useRef<TextInput>(null);
+
 	const [num1, setNum1] = useState(0);
 	const [num2, setNum2] = useState(0);
-	const [level, setLevel] = useState(1); // 1 = units, 2 = tens, 3 = hundreds
 	const [input, setInput] = useState("");
 	const [message, setMessage] = useState("");
 	const [timeLeft, setTimeLeft] = useState(10);
@@ -19,6 +21,7 @@ export default function App() {
 	const [questionCount, setQuestionCount] = useState(0);
 	const [score, setScore] = useState(0);
 	const [gameOver, setGameOver] = useState(false);
+	const [level, setLevel] = useState(1); // 1=units, 2=tens, 3=hundreds
 
 	useEffect(() => {
 		if (!started || gameOver) return;
@@ -53,14 +56,25 @@ export default function App() {
 			return;
 		}
 
-		const a = Math.floor(Math.random() * 50);
-		const b = Math.floor(Math.random() * 50);
+		let range = 10;
+		if (level === 2) range = 100;
+		if (level === 3) range = 1000;
+
+		const a = Math.floor(Math.random() * range);
+		const b = Math.floor(Math.random() * range);
 		setNum1(a);
 		setNum2(b);
 		setInput("");
 		setTimeLeft(10);
 		setMessage("");
 		setQuestionCount((prev) => prev + 1);
+
+		// Focus input field after slight delay
+		setTimeout(() => {
+			if (inputRef.current) {
+				inputRef.current.focus();
+			}
+		}, 100);
 	};
 
 	const checkAnswer = () => {
@@ -79,7 +93,18 @@ export default function App() {
 			behavior={Platform.OS === "ios" ? "padding" : "height"}
 			style={styles.container}>
 			{!started && !gameOver && (
-				<Button title="Start Game" onPress={startGame} />
+				<>
+					<Text style={styles.label}>Select Difficulty Level:</Text>
+					<Picker
+						selectedValue={level}
+						onValueChange={(itemValue) => setLevel(itemValue)}
+						style={styles.picker}>
+						<Picker.Item label="Units (0–9)" value={1} />
+						<Picker.Item label="Tens (0–99)" value={2} />
+						<Picker.Item label="Hundreds (0–999)" value={3} />
+					</Picker>
+					<Button title="Start Game" onPress={startGame} />
+				</>
 			)}
 
 			{started && (
@@ -94,6 +119,9 @@ export default function App() {
 						value={input}
 						onChangeText={setInput}
 						style={styles.input}
+						returnKeyType="done"
+						onSubmitEditing={checkAnswer}
+						ref={inputRef}
 					/>
 					<view
 						style={{
@@ -126,7 +154,19 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		alignItems: "center",
 		padding: 20,
-		backgroundColor: "#121212", // Dark background color
+		backgroundColor: "#121212",
+	},
+	label: {
+		fontSize: 18,
+		color: "#ffffff",
+		marginBottom: 5,
+	},
+	picker: {
+		height: 50,
+		width: 200,
+		color: "#ffffff",
+		backgroundColor: "#333",
+		marginBottom: 20,
 	},
 	question: {
 		fontSize: 32,
